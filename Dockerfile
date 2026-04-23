@@ -1,22 +1,36 @@
-# build stage
-FROM maven:3.9-eclipse-temurin-17 AS builder
+# Selects the JAR source: defaults to maven-build for local use.
+# CI overrides this with --build-arg BUILD_SOURCE=ci-build.
+ARG BUILD_SOURCE=maven-build
+
+
+# used for local/standalone builds - produces the application JAR from source code
+FROM maven:3.9-eclipse-temurin-17 AS maven-build
 
 WORKDIR /build
 
-# Cache Maven dependencies separately from source code.
-# This layer is only rebuilt when pom.xml changes, not on every source change.
+# cache Maven dependencies separately from source code
+# it is only rebuilt when pom.xml changes, not on every source change
 COPY pom.xml .
 RUN mvn dependency:go-offline -B -q
 
 COPY src ./src
-RUN mvn clean package -DskipTests -B -q
+RUN mvn clean package -DskipTests -B -q && cp target/devops-test-*.jar /app.jar
+
+
+# ci-build stage: used when the JAR is pre-built by CI and passed via build context.
+# Avoids running Maven twice (once in the test job, once here).
+FROM scratch AS ci-build
+COPY target/devops-test-*.jar /app.jar
+
+
+FROM ${BUILD_SOURCE} AS jar-source
 
 
 # extract spring layers for cache utilization
 FROM eclipse-temurin:17-jre AS extractor
 
 WORKDIR /extract
-COPY --from=builder /build/target/devops-test-*.jar app.jar
+COPY --from=jar-source /app.jar app.jar
 RUN java -Djarmode=layertools -jar app.jar extract
 
 
