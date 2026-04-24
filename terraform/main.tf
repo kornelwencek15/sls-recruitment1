@@ -34,6 +34,12 @@ resource "google_project_iam_member" "app_cloudsql_client" {
   member  = "serviceAccount:${google_service_account.app.email}"
 }
 
+resource "google_project_iam_member" "app_cloudsql_instance_user" {
+  project = var.project_id
+  role    = "roles/cloudsql.instanceUser"
+  member  = "serviceAccount:${google_service_account.app.email}"
+}
+
 # Allows the Kubernetes ServiceAccount "<namespace>/<name>" to impersonate this GCP SA
 resource "google_service_account_iam_member" "app_wif" {
   service_account_id = google_service_account.app.name
