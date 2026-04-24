@@ -21,7 +21,7 @@ spec:
             - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://127.0.0.1:5432/devops_db"
+              value: "jdbc:postgresql://127.0.0.1:5432/devops_db?sslmode=disable"
             - name: SPRING_DATASOURCE_USERNAME
               value: "${GCP_APP_SA_IAM_USER}"
           resources:
