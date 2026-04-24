@@ -53,6 +53,7 @@ spec:
             - "--auto-iam-authn"
             - "--structured-logs"
             - "--port=5432"
+            - "--private-ip"
             - "${CLOUD_SQL_CONNECTION_NAME}"
           resources:
             requests:
