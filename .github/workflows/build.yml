@@ -44,9 +44,6 @@ jobs:
       contents: read
       id-token: write  # required for Workload Identity Federation
 
-    outputs:
-      image: ${{ steps.tag.outputs.image }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -111,10 +108,10 @@ jobs:
           location: ${{ env.GCP_REGION }}
 
       - name: Deploy
-        env:
-          IMAGE: ${{ needs.build-and-push.outputs.image }}
         run: |
-          # Derive the IAM database username from the SA email
+          # Reconstruct the image URL here to avoid GitHub masking it when
+          # passed as a job output (project ID is a secret)
+          export IMAGE="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.AR_REPO }}/devops-test:sha-$(git rev-parse --short HEAD)"
           export GCP_APP_SA_IAM_USER="${GCP_APP_SA_EMAIL%.gserviceaccount.com}"
 
           kubectl apply -f kubernetes/namespace.yaml
