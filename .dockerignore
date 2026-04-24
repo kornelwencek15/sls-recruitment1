@@ -1,0 +1,5 @@
+.git
+.github
+target
+!target/devops-test-*.jar
+*.md
